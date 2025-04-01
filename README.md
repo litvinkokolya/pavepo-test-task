@@ -25,6 +25,7 @@ This service provides:
 
 3. Build and run the containers:
    sudo docker compose up --build
+   If you use another port - change port in YANDEX_REDIRECT_URI!
 
 4. Edit with your credentials (client_id) this url and open:
 
@@ -42,7 +43,7 @@ After startup, the API will be available at:
 ### Environment Variables
 | Variable               | Description                | Example              |
 |------------------------|----------------------------|----------------------|
-| `POSTGRES_SERVER`      | Postgres Server            | db                   |
+| `POSTGRES_HOST`        | Postgres HOST              | db                   |
 | `POSTGRES_USER`        | Postgres User              | postgres             |
 | `POSTGRES_PASSWORD`    | Postgres Password          | postgres             |
 | `POSTGRES_NAME`        | Postgres Name              | pavepo               |

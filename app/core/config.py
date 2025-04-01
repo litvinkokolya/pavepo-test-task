@@ -5,7 +5,7 @@ class Settings(BaseSettings):
     PROJECT_NAME: str = "Audio File Service Test Task"
     API_V1_STR: str = "/api/v1"
 
-    POSTGRES_SERVER: str
+    POSTGRES_HOST: str
     POSTGRES_USER: str
     POSTGRES_PASSWORD: str
     POSTGRES_NAME: str
@@ -13,7 +13,7 @@ class Settings(BaseSettings):
 
     YANDEX_CLIENT_ID: str
     YANDEX_CLIENT_SECRET: str
-    YANDEX_REDIRECT_URI: str = "http://127.0.0.1:8000/api/v1/users/yandex-auth" # Для удобства
+    YANDEX_REDIRECT_URI: str
     ALGORITHM: str
 
     SECRET_KEY: str
@@ -29,4 +29,4 @@ class Settings(BaseSettings):
 settings = Settings()
 
 DB_URL = (f"postgresql+asyncpg://{settings.POSTGRES_USER}:{settings.POSTGRES_PASSWORD}@"
-            f"{settings.POSTGRES_SERVER}:{settings.POSTGRES_PORT}/{settings.POSTGRES_NAME}")
+            f"{settings.POSTGRES_HOST}:{settings.POSTGRES_PORT}/{settings.POSTGRES_NAME}")
