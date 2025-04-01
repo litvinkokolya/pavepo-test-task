@@ -14,11 +14,12 @@ class Settings(BaseSettings):
     YANDEX_CLIENT_ID: str
     YANDEX_CLIENT_SECRET: str
     YANDEX_REDIRECT_URI: str
+    ALGORITHM: str
 
     SECRET_KEY: str
-    ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24 * 8  # 1 week
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24 * 7  # 1 week
 
-    AUDIO_FILES_DIR: str = "app/static/audio"
+    AUDIO_FILES_DIR: str = "app/audio"
 
     class Config:
         case_sensitive = True

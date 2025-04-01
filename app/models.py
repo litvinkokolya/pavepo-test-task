@@ -17,13 +17,12 @@ class User(BaseModel):
     __tablename__ = "users"
 
     email = Column(String, unique=True, index=True, nullable=False)
-    hashed_password = Column(String, nullable=True)
     full_name = Column(String, index=True)
     is_active = Column(Boolean(), default=True)
     is_superuser = Column(Boolean(), default=False)
     yandex_id = Column(String, unique=True, index=True, nullable=True)
 
-    audio_files = relationship("AudioFile", back_populates="audio_files")
+    audio_files = relationship("AudioFile", back_populates="owner")
 
 
 class AudioFile(BaseModel):

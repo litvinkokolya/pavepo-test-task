@@ -8,7 +8,7 @@ from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import settings
-from app.crud import get_user_by_email
+from app.crud import get_user_by_yandex_id
 from app.db import get_db
 from app.schemas import TokenData, UserInDB
 
@@ -17,24 +17,9 @@ pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl=f"{settings.API_V1_STR}/login")
 
 
-def verify_password(plain_password: str, hashed_password: str) -> bool:
-    return pwd_context.verify(plain_password, hashed_password)
-
-
-def get_password_hash(password: str) -> str:
-    return pwd_context.hash(password)
-
-
-async def authenticate_user(db: AsyncSession, email: str, password: str) -> Optional[UserInDB]:
-    user = await get_user_by_email(db, email=email)
-    if not user or not verify_password(password, user.hashed_password):
-        return None
-    return user
-
-
-def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -> str:
+def create_token(data: dict, expires_delta: timedelta) -> str:
     to_encode = data.copy()
-    expire = datetime.now() + (expires_delta or timedelta(minutes=15))
+    expire = datetime.now() + expires_delta
     to_encode.update({"exp": expire})
     return jwt.encode(
         to_encode,
@@ -58,15 +43,15 @@ async def get_current_user(
             settings.SECRET_KEY,
             algorithms=[settings.ALGORITHM]
         )
-        email: str = payload.get("sub")
-        if email is None:
+        yandex_id: str = payload.get("sub")
+        if yandex_id is None:
             raise credentials_exception
-        token_data = TokenData(email=email)
+        token_data = TokenData(yandex_id=yandex_id)
 
-    except jwt.JWTError:
+    except jwt.InvalidTokenError:
         raise credentials_exception
 
-    user = await get_user_by_email(db, email=token_data.email)
+    user = await get_user_by_yandex_id(db, yandex_id=token_data.yandex_id)
 
     if user is None:
         raise credentials_exception

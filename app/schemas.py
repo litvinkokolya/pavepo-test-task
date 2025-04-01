@@ -4,18 +4,17 @@ from typing import Optional
 
 class UserBase(BaseModel):
     email: EmailStr
+    yandex_id: Optional[str] = None
     full_name: Optional[str] = None
 
 
 class UserCreate(UserBase):
-    password: Optional[str] = None
     yandex_id: Optional[str] = None
 
 
 class UserUpdate(BaseModel):
     email: Optional[EmailStr] = None
     full_name: Optional[str] = None
-    password: Optional[str] = None
 
 
 class UserInDB(UserBase):
@@ -33,7 +32,7 @@ class Token(BaseModel):
 
 
 class TokenData(BaseModel):
-    email: Optional[str] = None
+    yandex_id: Optional[str] = None
 
 
 class AudioFileBase(BaseModel):
