@@ -1,26 +1,29 @@
 from datetime import datetime, timedelta
-from typing import Optional
+from typing import Literal
 import jwt
 
+from fastapi.params import Security
 from passlib.context import CryptContext
-from fastapi import Depends, HTTPException, status
-from fastapi.security import OAuth2PasswordBearer
+from fastapi import Depends, HTTPException
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import settings
-from app.crud import get_user_by_yandex_id
+from app.sevices.crud import get_user_by_yandex_id
 from app.db import get_db
-from app.schemas import TokenData, UserInDB
+from app.schemas import UserInDB
+from app.utils import decode_token
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl=f"{settings.API_V1_STR}/login")
+security = HTTPBearer()
 
 
-def create_token(data: dict, expires_delta: timedelta) -> str:
+def create_token(data: dict, expires_delta: timedelta, token_type: Literal["access", "refresh"]) -> str:
     to_encode = data.copy()
     expire = datetime.now() + expires_delta
     to_encode.update({"exp": expire})
+    to_encode.update({"type": token_type})
     return jwt.encode(
         to_encode,
         settings.SECRET_KEY,
@@ -30,30 +33,22 @@ def create_token(data: dict, expires_delta: timedelta) -> str:
 
 async def get_current_user(
         db: AsyncSession = Depends(get_db),
-        token: str = Depends(oauth2_scheme)
+        credentials: HTTPAuthorizationCredentials = Security(security),
 ) -> UserInDB:
-    credentials_exception = HTTPException(
-        status_code=status.HTTP_401_UNAUTHORIZED,
-        detail="Could not validate credentials",
-        headers={"WWW-Authenticate": "Bearer"},
-    )
-    try:
-        payload = jwt.decode(
-            token,
-            settings.SECRET_KEY,
-            algorithms=[settings.ALGORITHM]
-        )
-        yandex_id: str = payload.get("sub")
-        if yandex_id is None:
-            raise credentials_exception
-        token_data = TokenData(yandex_id=yandex_id)
+    payload = await decode_token(credentials.credentials, expected_type="access")
+    yandex_id = payload.get("sub")
 
-    except jwt.InvalidTokenError:
-        raise credentials_exception
+    if not yandex_id:
+        raise HTTPException(status_code=401, detail="Invalid token")
 
-    user = await get_user_by_yandex_id(db, yandex_id=token_data.yandex_id)
+    user = await get_user_by_yandex_id(db, yandex_id=yandex_id)
+    if not user:
+        raise HTTPException(status_code=401, detail="User not found")
 
-    if user is None:
-        raise credentials_exception
+    return user
 
+
+async def get_superuser(user: UserInDB = Depends(get_current_user)) -> UserInDB:
+    if not user.is_superuser:
+        raise HTTPException(status_code=403, detail="Not enough privileges")
     return user

@@ -13,7 +13,7 @@ class Settings(BaseSettings):
 
     YANDEX_CLIENT_ID: str
     YANDEX_CLIENT_SECRET: str
-    YANDEX_REDIRECT_URI: str
+    YANDEX_REDIRECT_URI: str = "http://127.0.0.1:8000/api/v1/users/yandex-auth" # Для удобства
     ALGORITHM: str
 
     SECRET_KEY: str
