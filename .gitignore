@@ -1,4 +1,5 @@
 .idea
+app/audio
 .ipynb_checkpoints
 .mypy_cache
 .vscode
